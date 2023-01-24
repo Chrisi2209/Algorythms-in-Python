@@ -1,11 +1,11 @@
 import sys
 import os
-
 from secrets import token_bytes
 
 def random_key(length: int) -> int:
     tb: bytes = token_bytes(length)
     return int.from_bytes(tb, "big")
+
 
 def encrypt(data: bytes) -> tuple[bytes, bytes]:
     key: bytes = random_key(len(data))
@@ -23,6 +23,26 @@ def decrypt(encrypted: bytes, key: bytes) -> bytes:
     return bytes(temp)
 
 
+def del_command(path):
+    path_to_encrypted = os.path.splitext(path)[0] + "_encrypted" + ".bin"
+    path_to_key = os.path.splitext(path)[0] + "_key" + ".bin"
+    path_to_decrypted = os.path.splitext(path)[0] + "_decrypted" + ".png"
+    try:
+        os.remove(path_to_encrypted)
+    except FileNotFoundError:
+        print("no encrypted file")
+    
+    try:
+        os.remove(path_to_key)
+    except FileNotFoundError:
+        print("no key file")
+
+    try:
+        os.remove(path_to_decrypted)
+    except FileNotFoundError:
+        print("no decrypted file")
+
+
 def main():
     try:
         path = sys.argv[1]
@@ -30,32 +50,15 @@ def main():
         print("please input path as argument!")
         return
 
+    # del command to delete all by this script created files
     if path == "del":
         if len(sys.argv) != 3:
             print("please enter path to normal png file second")
             return
         
         path = sys.argv[2]
-        path_to_encrypted = os.path.splitext(path)[0] + "_encrypted" + ".bin"
-        path_to_key = os.path.splitext(path)[0] + "_key" + ".bin"
-        path_to_decrypted = os.path.splitext(path)[0] + "_decrypted" + ".png"
-        try:
-            os.remove(path_to_encrypted)
-        except FileNotFoundError:
-            print("no encrypted file")
-        
-        try:
-            os.remove(path_to_key)
-        except FileNotFoundError:
-            print("no key file")
-
-        try:
-            os.remove(path_to_decrypted)
-        except FileNotFoundError:
-            print("no decrypted file")
-        
+        del_command(path)
         return
-
 
     # convert to absolute path
     path = os.path.abspath(path)
@@ -65,6 +68,7 @@ def main():
         print("path not found")
         return
 
+    # if bin was entered, has to be encrypted path with key path
     if os.path.splitext(path)[1] == ".bin":
         if len(sys.argv) != 3:
             print("please enter key as second argument")
@@ -93,10 +97,6 @@ def main():
     if os.path.splitext(path)[1] != ".png":
         print("file has to be png or encrypted bin!")
         return
-        
-
-
-    
 
     # get image content
     with open(path, "rb") as img:
@@ -122,8 +122,6 @@ def main():
     with open(path_to_key, "wb") as f:
         f.write(key.to_bytes((key.bit_length() + 7) // 8, "big"))
 
-
-    
 
 if __name__ == "__main__":
     main()
