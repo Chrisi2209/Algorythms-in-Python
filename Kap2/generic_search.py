@@ -1,7 +1,7 @@
 from __future__ import annotations
 from heapq import heappush, heappop
 from enum import Enum
-from typing import NamedTuple, Optional, Callable
+from typing import NamedTuple, Optional, Callable, Tuple
 import random
 
 
@@ -152,6 +152,30 @@ def bfs(successors: Callable, goal_test: Callable, initial: Node) -> Optional[No
                 explored.add(child)
                 frontier.push(Node(child, current_node))
 
+def count_bfs(successors: Callable, goal_test: Callable, initial: Node) -> Tuple[Optional[Node], int]:
+    explored: set = {initial}
+    frontier: Queue = Queue()
+
+    frontier.push(Node(initial, None))
+
+    counter: int = 0
+    while not frontier.empty:
+        counter += 1
+
+        current_node: Node = frontier.pop()
+
+        if goal_test(current_node.state):
+            return current_node, counter
+
+        childs: list[MazeLocation] = successors(current_node.state)
+
+        for child in childs:
+            if child not in explored:
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+    
+    return None, counter
+
 def dfs(successors: Callable, goal_test: Callable, initial: Node) -> Optional[Node]:
     explored: set = {initial}
     frontier: Stack = Stack()
@@ -173,7 +197,31 @@ def dfs(successors: Callable, goal_test: Callable, initial: Node) -> Optional[No
 
     return None
 
-def astar(successors: Callable, goal_test: Callable, initial: Node, heuristic: Callable):
+def count_dfs(successors: Callable, goal_test: Callable, initial: Node) -> Tuple[Optional[Node], int]:
+    explored: set = {initial}
+    frontier: Stack = Stack()
+
+    frontier.push(Node(initial, None))
+
+    counter: int = 0
+    while not frontier.empty:
+        counter += 1
+
+        current_node: Node = frontier.pop()
+
+        if goal_test(current_node.state):
+            return current_node, counter
+
+        childs: list[MazeLocation] = successors(current_node.state)
+
+        for child in childs:
+            if child not in explored:
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+
+    return None, counter
+
+def astar(successors: Callable, goal_test: Callable, initial: Node, heuristic: Callable) -> Optional[Node]:
     explored: set = {initial}
     frontier: PriorityQueue = PriorityQueue()
 
@@ -194,6 +242,29 @@ def astar(successors: Callable, goal_test: Callable, initial: Node, heuristic: C
 
     return None
 
+def count_astar(successors: Callable, goal_test: Callable, initial: Node, heuristic: Callable) -> Tuple[Optional[Node], int]:
+    explored: set = {initial}
+    frontier: PriorityQueue = PriorityQueue()
+
+    frontier.push(Node(initial, None, 0, heuristic(initial)))
+
+    counter: int = 0
+    while not frontier.empty:
+        counter += 1
+
+        current_node: Node = frontier.pop()
+
+        if goal_test(current_node.state):
+            return current_node, counter
+
+        childs: list[MazeLocation] = successors(current_node.state)
+
+        for child in childs:
+            if child not in explored:
+                explored.add(child)
+                frontier.push(Node(child, current_node, current_node.cost + 1, heuristic(child)))
+
+    return None, counter
 
 def node_to_path(node: Node) -> list[MazeLocation]:
     path: list[MazeLocation] = []
