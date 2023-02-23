@@ -43,6 +43,9 @@ class Queue:
     
     def pop(self):
         return self._container.pop(0)
+    
+    def __repr__(self):
+        return str(self._container)
 
 
 class PriorityQueue:
@@ -59,6 +62,8 @@ class PriorityQueue:
     def pop(self):
         return heappop(self._container)
 
+    def __repr__(self):
+        return str(self._container)
 
 class Cell(Enum):
     EMPTY = " "
