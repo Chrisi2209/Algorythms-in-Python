@@ -3,10 +3,7 @@ import sys
 sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\kap3\\')
 
 from csp import CSP, Constraint
-from typing import List, Dict, NamedTuple, TypeVar
-from random import choice
-from string import ascii_uppercase
-from pprint import pprint
+from typing import List, Dict, NamedTuple
 
 Grid = List[List[int]]
 
