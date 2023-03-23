@@ -17,12 +17,15 @@ class CSP:
         self.possibilities: Dict[V, List[Possibility]] = possibilities
         self.constraints: Dict[V, List[Constraint]] = {}
 
+        for variable in variables:
+            self.constraints[variable] = []
+
         self.check_integrity()
 
         
     def check_integrity(self):
         # if one variable has 2 domains or the length doesn't match, theres something wrong
-        if len(self.possibilities.keys()) != len(set(self.possibilities.keys())) or len(self.variables) != len(self.possibilities.values()):
+        if len(self.possibilities.keys()) != len(set(self.possibilities.keys())) or len(self.variables) != len(self.possibilities.keys()):
             raise ValueError("not every variable has a domain")
         
         # check if every variable has a domain
@@ -37,7 +40,13 @@ class CSP:
             if variable not in self.variables:
                 raise LookupError("variable in constraint not in CSP")
             else:
-                self.constraints[variable] = constraint
+                self.constraints[variable].append(constraint)
+
+    def check_satisfied(self, variable: V, assignment: Dict[V, Possibility]):
+        for constraint in self.constraints[variable]:
+            if not constraint.satisfied(assignment):
+                return False
+        return True
 
     def backtracking_search(self, assignment: Dict[V, Possibility] = {}) -> Optional[Dict[V, Possibility]]:
         if len(assignment.keys()) == len(self.variables):
@@ -51,9 +60,8 @@ class CSP:
             local_assignment: Dict[V, Possibility] = assignment.copy()
             local_assignment[next_variable] = possibility
 
-            for constraint in self.constraints[next_variable]:
-                if not constraint.satisfied(local_assignment):
-                    continue  # wenn possibility nicht geht dann nächste probieren
+            if not self.check_satisfied(next_variable, local_assignment):
+                continue
             
             result: Optional[Dict[V, Possibility]] = self.backtracking_search(local_assignment)
 
