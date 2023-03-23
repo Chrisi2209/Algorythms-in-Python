@@ -21,8 +21,20 @@ class WordSearchConstraint(Constraint):
 
     def satisfied(self, assignment: Dict[str, List[GridLocation]]):
         # Wenn es doppelte Einträge gibt
-        all_locations: List[GridLocation] = [gl for gl_list in assignment.values() for gl in gl_list]
-        return len(all_locations) == len(set(all_locations))
+        pprint(assignment)
+        for var, loc in assignment.items():
+            for index, gl in enumerate(loc):
+
+                for var2, loc2 in assignment.items():
+                    for index2, gl2 in enumerate(loc2):
+                        if gl == gl2 and var[index] != var2[index2]:
+                            return False
+                        
+        return True
+
+
+        # all_locations: List[GridLocation] = [gl for gl_list in assignment.values() for gl in gl_list]
+        # return len(all_locations) == len(set(all_locations))
     
 
 def generate_grid(rows: int, columns: int) -> Grid:
@@ -56,7 +68,6 @@ def generate_domain(words: List[str], grid: Grid):
                     if col - length >= 0:
                         possibilities[word].append([GridLocation(r, col - (r - row)) for r in rows])
 
-        pprint(possibilities)
         # possibilities[word] = []
 
         # word_length = len(word)
@@ -84,7 +95,7 @@ def generate_domain(words: List[str], grid: Grid):
 
 
 if __name__ == "__main__":
-    words: List[str] = ["ich", "nicht", "gut", "falsch"]
+    words: List[str] = ["nana", "ich", "nicht", "gut", "falsch"]
     grid: Grid = generate_grid(8, 4)
     possibilities: Dict[str, List[GridLocation]] = generate_domain(words, grid)
 
