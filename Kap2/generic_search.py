@@ -156,6 +156,8 @@ def bfs(successors: Callable, goal_test: Callable, initial: Node) -> Optional[No
             if child not in explored:
                 explored.add(child)
                 frontier.push(Node(child, current_node))
+    
+    return None
 
 def count_bfs(successors: Callable, goal_test: Callable, initial: Node) -> Tuple[Optional[Node], int]:
     explored: set = {initial}
