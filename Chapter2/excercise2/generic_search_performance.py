@@ -1,5 +1,5 @@
 import sys
-sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\kap2\\')
+sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter2\\')
 
 from typing import Iterable
 import generic_search

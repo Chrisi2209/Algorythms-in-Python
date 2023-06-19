@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Callable, Optional
 
 import sys
-sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\kap2\\')
+sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter2\\')
 
 from generic_search import Node, PriorityQueue, Queue
 

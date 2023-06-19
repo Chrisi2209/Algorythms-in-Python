@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Tuple, TypeVar, Dict, Optional 
 from dataclasses import dataclass
 import sys
-sys.path.insert(0, "C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Kap2")
+sys.path.insert(0, "C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter2")
 from generic_search import bfs, Node, PriorityQueue
 
 v = TypeVar("v")  # vertex (a string)

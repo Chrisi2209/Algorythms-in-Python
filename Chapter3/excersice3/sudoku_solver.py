@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\kap3\\')
+sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter3\\')
 
 from csp import CSP, Constraint
 from typing import List, Dict, Tuple

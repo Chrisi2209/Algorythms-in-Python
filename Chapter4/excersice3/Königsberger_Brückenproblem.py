@@ -1,7 +1,7 @@
 from typing import Set, Tuple, Optional, Dict, List
 
 import sys
-sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\kap4\\')
+sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter4\\')
 
 from excersice1and2 import graph
 
