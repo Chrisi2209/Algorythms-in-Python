@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter\\')
+sys.path.append('C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter3\\')
 
 from csp import CSP, Constraint
 from typing import List, Dict, NamedTuple
@@ -69,14 +69,16 @@ def display_grid(grid: Grid):
         
 
 if __name__ == "__main__":
-    chips: List[Chip] = [Chip(2, 3), Chip(1, 3), Chip(3, 4), Chip(3, 3), Chip(3, 2), Chip(2, 2), Chip(3, 2), Chip(1, 2)] # 2 mit selber breite unf Höhe
+    chips: List[Chip] = [Chip(2, 3), Chip(1, 3), Chip(3, 3), Chip(3, 2), Chip(2, 2), Chip(3, 2), Chip(1, 2)] # 2 mit selber breite unf Höhe
     grid: Grid = generate_grid(7, 7)
     domain = generate_domain(chips)
     csp = CSP(chips, domain)
     constraint: ChipSearchConstraint = ChipSearchConstraint(chips)
     csp.add_constraint(constraint)
 
-    assignment: Dict[Chip, GridLocation] = csp.backtracking_search()
+    # assignment: Dict[Chip, GridLocation] = csp.backtracking_search()
+    assignment: Dict[Chip, GridLocation] = csp.genetic_search()
+
 
     if assignment is not None:
         assignment_to_grid(grid, assignment)

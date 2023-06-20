@@ -21,7 +21,6 @@ class WordSearchConstraint(Constraint):
 
     def satisfied(self, assignment: Dict[str, List[GridLocation]]):
         # Wenn es doppelte Einträge gibt
-        pprint(assignment)
         for var, loc in assignment.items():
             for index, gl in enumerate(loc):
 
@@ -61,7 +60,8 @@ def generate_domain(words: List[str], grid: Grid):
 
                     if row + length <= height:
                         possibilities[word].append([GridLocation(r, col + (r - row)) for r in rows])
-                
+
+
                 if row + length <= height:
                     possibilities[word].append([GridLocation(r, col) for r in rows])
 
@@ -96,15 +96,17 @@ def generate_domain(words: List[str], grid: Grid):
 
 if __name__ == "__main__":
     words: List[str] = ["nana", "ich", "nicht", "gut", "falsch"]
-    grid: Grid = generate_grid(8, 4)
+    grid: Grid = generate_grid(4, 8)
     possibilities: Dict[str, List[GridLocation]] = generate_domain(words, grid)
 
     csp = CSP(words, possibilities)
     constraint: WordSearchConstraint = WordSearchConstraint(words)
     csp.add_constraint(constraint)   
-    assignment: Dict[str, List[GridLocation]] = csp.backtracking_search()
+    #assignment: Dict[str, List[GridLocation]] = csp.backtracking_search()
+    assignment: Dict[str, List[GridLocation]] = csp.genetic_search()
 
     if assignment is not None:
+        print(assignment)
         for v, loc in assignment.items():
             for index, gl in enumerate(loc):
                 grid[gl.row][gl.column] = v[index]

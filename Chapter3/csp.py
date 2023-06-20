@@ -1,6 +1,9 @@
-from typing import List, TypeVar, Dict, Optional
+from typing import List, TypeVar, Dict, Optional, Callable
+import sys
+from csp_chromosome import CspChromosome
 
 V = TypeVar("V")
+T = TypeVar("T")
 Possibility = TypeVar("Possibility")
 
 class Constraint:
@@ -72,3 +75,42 @@ class CSP:
 
         # wenn keine Lösung für dieses Assignment gefunden wurde
         return None
+    
+    def genetic_search(self):
+        sys.path.insert(0, "C:\\Programmieren\\VS_Code\\pythonAlgorithmusÜbungen\\Chapter5")
+        from genetic_algorithm import GeneticAlgorithm
+
+        ga: GeneticAlgorithm = GeneticAlgorithm(
+            [CspChromosome.random_instance(self.possibilities, fitness_func(self)) for _ in range(1000)],
+            threshhold=len_of_dict_with_lists(self.constraints),
+            max_generations=100,
+            mutation_chance=0.08,
+            crossover_chance=0.7,
+            selection_type=GeneticAlgorithm.SelectionType.Tournament
+        )
+
+        best: CspChromosome = ga.run()
+        
+        for variable in best._assignment.keys():
+            if not self.check_satisfied(variable, best._assignment):
+                return None
+        return best._assignment
+
+def fitness_func(csp: CSP) -> Callable:
+    def fitness(self: CspChromosome):
+        fitness: float = 0
+        for variable in self._assignment.keys():
+            for constraint in csp.constraints[variable]:
+                if constraint.satisfied(self._assignment):
+                    fitness += 1
+        
+        return fitness
+    
+    return fitness
+
+def len_of_dict_with_lists(dict: Dict[T, List]) -> int:
+    length: int = 0
+    for key in dict.keys():
+        length += len(dict[key])
+    
+    return length
