@@ -15,7 +15,7 @@ class FunctionChromosome(Chromosome):
         self.y = y
 
     def fitness(self):
-        return 6 * self.x +- self.x * self.x + 4 * self.y - self.y * self.y
+        return 6 * self.x - self.x * self.x + 4 * self.y - self.y * self.y
 
     @classmethod
     def random_instance(cls: Type[T]) -> T:
