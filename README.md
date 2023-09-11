@@ -1,0 +1,1 @@
+These exercises is from the python book "Algorithmen in Python" with the Verlag "Rheinwerk Computing".
