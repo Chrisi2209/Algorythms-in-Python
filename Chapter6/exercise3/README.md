@@ -1,0 +1,1 @@
+this exercise is in k_means and is just that you can provide the starting locations for the centroids.

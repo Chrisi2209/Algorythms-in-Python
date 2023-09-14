@@ -169,6 +169,13 @@ class KMeans:
             
             cluster.centroid = DataPoint(means)
 
+    def define_centroids(self, centroids: List[Point]):
+        if self.k != len(centroids):
+            raise AttributeError("please specify the right amount of centroids")
+        
+        for cluster, new_centroid in zip(self._clusters, centroids):
+            cluster.centroid = new_centroid
+
 
 
 if __name__ == "__main__":
@@ -199,6 +206,7 @@ if __name__ == "__main__":
 
         for _ in range(1):
             k_means: KMeans = KMeans(import_data_points_csv(os.path.realpath(os.path.join(os.path.realpath(__file__), "..", "exercise1", "data3.csv"))), k=3)
+            k_means.define_centroids([DataPoint((0,)), DataPoint((1,)), DataPoint((-1,))])
             clusters = k_means.run()
 
             for i, cluster in enumerate(clusters):
