@@ -15,7 +15,7 @@ from functools import partial
 from typing import List, Iterable, TypeVar, Optional
 from statistics import pstdev, mean
 from dataclasses import dataclass
-from random import uniform
+from random import uniform, choice, choices
 from copy import deepcopy
 import os
 
@@ -175,6 +175,36 @@ class KMeans:
         
         for cluster, new_centroid in zip(self._clusters, centroids):
             cluster.centroid = new_centroid
+    
+    def plus_plus(self):
+        """
+        call this method after initialization to use the kmeans++
+        algorithm for determining where the clusters' starting positions
+        are initialized
+        """
+        self._clusters.clear()
+
+        first_centroid = deepcopy(choice(self.points))
+        self._clusters.append(KMeans.Cluster(deepcopy(first_centroid), []))
+
+        for i in range(self.k):
+            distances: List[float] = []
+            probabilities: List[float] = []
+            # calculate probabilities
+            for point in self.points:
+                min_distance = float(min(map(partial(DataPoint.distance, point), self._centroids)))
+                distances.append(min_distance ** 2)
+            
+            sum_of_distances = float(sum(distances))
+
+            for distance in distances:
+                probabilities.append(distance / sum_of_distances)
+            
+            # select by roulette
+            point: Point = choices(self.points, probabilities, k=1)[0]
+            self._clusters.append(KMeans.Cluster(deepcopy(point), []))
+                
+
 
 
 
@@ -192,21 +222,21 @@ if __name__ == "__main__":
         DataPoint([3.0, 1.5]),
     ]
     for i in range(1):
-        k_means: KMeans = KMeans(test_points, k=2)
-        clusters: List[KMeans.Cluster] = k_means.run()
+        # k_means: KMeans = KMeans(test_points, k=2)
+        # clusters: List[KMeans.Cluster] = k_means.run()
 
-        for i, cluster in enumerate(clusters):
-            print(f"cluster {i}: {cluster.points}, centroid: {cluster.centroid}")
+        # for i, cluster in enumerate(clusters):
+        #     print(f"cluster {i}: {cluster.points}, centroid: {cluster.centroid}")
         
         from exercise2.plotting import plot_clusters
         # plot_clusters(clusters)
 
         from exercise1.csv_import import import_data_points_csv
-        print(os.path.realpath(os.path.join(os.path.realpath(__file__), "..", "exersice1", "data.csv")))
+        # print(os.path.realpath(os.path.join(os.path.realpath(__file__), "..", "exersice1", "data.csv")))
 
-        for _ in range(1):
-            k_means: KMeans = KMeans(import_data_points_csv(os.path.realpath(os.path.join(os.path.realpath(__file__), "..", "exercise1", "data3.csv"))), k=3)
-            k_means.define_centroids([DataPoint((0,)), DataPoint((1,)), DataPoint((-1,))])
+        for _ in range(100):
+            k_means: KMeans = KMeans(import_data_points_csv(os.path.realpath(os.path.join(os.path.realpath(__file__), "..", "exercise1", "data2.csv"))), k=2)
+            k_means.plus_plus()
             clusters = k_means.run()
 
             for i, cluster in enumerate(clusters):
