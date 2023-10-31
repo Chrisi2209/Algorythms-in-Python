@@ -21,10 +21,10 @@ class Network:
         self.activation_fuction = activation_function
         self.derivative_activation_function = derivative_activation_function
         
-        self.layers: List[Layer] = [Layer(self.structure[0], 0, self.activation_fuction, self.derivative_activation_function),]
+        self.layers: List[Layer] = [Layer(self.structure[0], None, self.activation_fuction, self.derivative_activation_function, learning_rate),]
 
         for previous, num_neurons in enumerate(structure[1:]):
-            self.layers.append(Layer(num_neurons, self.structure[previous], self.activation_fuction, self.derivative_activation_function, learning_rate))
+            self.layers.append(Layer(num_neurons, self.layers[previous], self.activation_fuction, self.derivative_activation_function, learning_rate))
 
 
     def outputs(self, input: np.NDArray[float]) -> List[float]:
@@ -43,8 +43,8 @@ class Network:
         self.layers[last_layer].calculate_delta_for_output_layer(expected)
 
         # first layer does not have weights and therefore also don't have a delta
-        for layer in range(last_layer, 0, -1):
-            self.layers[layer].calculate_delta_for_hidden_layer(layer + 1)
+        for layer in range(last_layer - 1, 0, -1):
+            self.layers[layer].calculate_delta_for_hidden_layer(self.layers[layer + 1])
 
     def update_weights(self):
         """

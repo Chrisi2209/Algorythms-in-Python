@@ -19,23 +19,26 @@ class Layer:
 
         self.neurons: List[Neuron] = []
         for _ in range(num_neurons):
-            weights: int = [random() for _ in range(len(previous_layer.neurons))]
-            self.neurons.append(
-                Neuron(self.activation_function, self.derivative_activation_function, weights, learning_rate)
-            )
+            if self.previous_layer is None:
+                self.neurons.append(Neuron(self.activation_function, self.derivative_activation_function, [], learning_rate))
+            else:
+                weights: int = [random() for _ in range(len(previous_layer.neurons))]
+                self.neurons.append(
+                    Neuron(self.activation_function, self.derivative_activation_function, weights, learning_rate)
+                )
 
 
     def output(self, inputs: np.NDArray[float]) -> List[float]:
         """
         gets an input to the layer and the output is determined by each neurons weights
         """
-        output: List[float] = []
+        if self.previous_layer is None:
+            self.output_cache = inputs
+            
+        else:
+            self.output_cache = [n.output(inputs) for n in self.neurons]
 
-        for i, neuron in enumerate(self.neurons):
-            output.append(neuron.output(inputs))
-            self.output_cache[i] = neuron.output_cache
-
-        return output
+        return self.output_cache
     
     def calculate_delta_for_output_layer(self, expected: np.NDArray[float]):
         """

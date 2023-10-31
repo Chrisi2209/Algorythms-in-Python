@@ -8,7 +8,22 @@ def derivative_sigmoid(x: float) -> float:
     sig = sigmoid(x)
     return sig * (1 - sig)
 
-def normalize_by_feature_scaling(input: List[List[float]]) -> List[List[float]]:
+def binary_step(x: float) -> float:
+    return 0 if x < 0 else 1
+
+def binary_step_derivative(x: float) -> float:
+    if x != 0:
+        return 0
+    else:
+        raise Exception()
+    
+def linear(x: float) -> float:
+    return 0.25 * x
+
+def linear_derivative(x: float) -> float:
+    return 0.25
+
+def normalize_by_feature_scaling(input: List[List[float]]):
     for col in range(len(input[0])):
         column = [] 
         for row in range(len(input)):

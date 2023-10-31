@@ -2,9 +2,6 @@ from __future__ import annotations
 from typing import Callable
 import numpy as np
 
-print(np.dot(np.array([1, 2, 3]), np.array([2, 5, 1])))
-
-
 class Neuron:
     def __init__(self, activation_function: Callable[[float], float], 
                  derivative_activation_function: Callable[[float], float], 
