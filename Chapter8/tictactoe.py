@@ -28,7 +28,7 @@ class TTTPiece(Piece, Enum):
 def col_row_to_index(col: int, row: int) -> int:
     return col * 3 + row
 
-def get_TTT_segments() -> List[List[Tuple]]:
+def get_TTT_segments() -> List[List[int]]:
     segments = []
     for col in range(3):
         segments.append([col_row_to_index(col, 0), col_row_to_index(col, 1), col_row_to_index(col, 2)])
@@ -44,7 +44,7 @@ def get_TTT_segments() -> List[List[Tuple]]:
 
 
 class TTTBoard(Board):
-    segments = get_TTT_segments()
+    segments: List[List[int]] = get_TTT_segments()
 
     def __init__(self, turn: TTTPiece = TTTPiece.X, position: List[TTTPiece] = [TTTPiece.E] * 9) -> None:
         self._turn = turn
