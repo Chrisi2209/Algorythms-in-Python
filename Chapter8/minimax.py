@@ -109,9 +109,10 @@ def find_best_move_random(board: Board, max_depth: int):
 
     for move in board.legal_moves:
         # this player is maximizing so the next move will be minimizing
-        eval: float = alphabeta(board.move(move), False, board.turn, max_depth)
+        eval: float = round(alphabeta(board.move(
+            move), False, board.turn, max_depth), 12)
 
-        # print(f"move: {move}, eval: {eval}")
+        print(f"move: {move}, eval: {eval}")
 
         if eval > best_eval:
             best_moves = [move]

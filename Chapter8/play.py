@@ -5,28 +5,35 @@ from board import Move, Board
 from minimax import find_best_move, find_best_move_random, find_best_move_connect4_optimized
 
 
-def get_human_move(board: Board, board_to_human_move: Callable[[int], Move]) -> Move:
+def get_human_move(board: Board, board_to_human_move: Callable[[int], Move], int_human=True) -> Move:
     human_move: Move = Move(-1)
 
     human_move_list: List[int] = [board_to_human_move(move)
                                   for move in board.legal_moves]
 
+    print("possible_moves:", human_move_list)
+
     while human_move not in human_move_list:
         try:
-            human_move = int(input("your next move: "))
+            if int_human:
+                human_move = int(input("your next move: "))
+            else:
+                human_move = input("your next move: ")
         except KeyboardInterrupt:
             raise KeyboardInterrupt()
         except:
             pass
 
-    return board.legal_moves[human_move_list.index(human_move)]
+    # convert to a MOVE object
+    return list(board.legal_moves)[human_move_list.index(human_move)]
 
 
-def game_loop(board: Board, max_depth: int = 5, board_to_human_move: Callable[[int], int] = lambda x: x):
+def game_loop(board: Board, max_depth: int = 5, board_to_human_move: Callable[[int], int] = lambda x: x, int_human=True):
     print(board)
 
     while True:
-        human_move: Move = get_human_move(board, board_to_human_move)
+        human_move: Move = get_human_move(
+            board, board_to_human_move, int_human)
         board = board.move(human_move)
         print(board)
         if board.is_win:
