@@ -167,9 +167,6 @@ class Connect4Board(Board):
 
             count: int = max(red_count, blue_count)
 
-            # könnte auch Faktor von unendlich machen, nur zählen wer am meisten
-            # vom meisten hat.
-
             if count == 0:
                 continue
 
@@ -186,6 +183,241 @@ class Connect4Board(Board):
                 eval += 1_000_000_000_000 * multiplicator
 
         return eval
+
+    # optimized_functions
+    def get_segments_for_move(self, move: Move) -> Tuple[List[List[int]], List[List[int]], List[List[int]], List[List[int]]]:
+        last_move_col: int = move % self.width
+        last_move_row: int = move // self.width
+
+        segments_horizontal: List[List[int]] = [[c_r_index(x, last_move_row, self.width)
+                                                 for x in range(last_move_col - self.win_length + i, last_move_col + i)]
+                                                for i in range(1, self.win_length + 1)
+                                                # <= self.width because it will only go win_length - 1 towards the edge
+                                                if 0 <= last_move_col - self.win_length + i and last_move_col + i <= self.width]
+
+        segments_vertical: List[List[int]] = [[c_r_index(last_move_col, y, self.width)
+                                               for y in range(last_move_row - self.win_length + i, last_move_row + i)]
+                                              for i in range(1, self.win_length + 1)
+                                              if 0 <= last_move_row - self.win_length + i and last_move_row + i <= self.height]
+
+        segments_down_right: List[List[int]] = [[c_r_index(x, y, self.width)
+                                                 for x, y in zip(
+                                                     range(
+                                                         last_move_col - self.win_length + i, last_move_col + i),
+                                                     range(
+                                                         last_move_row - self.win_length + i, last_move_row + i),
+        )]
+            for i in range(1, self.win_length + 1)
+            if 0 <= last_move_col - self.win_length + i and last_move_col + i <= self.width and
+            0 <= last_move_row - self.win_length + i and last_move_row + i <= self.height]
+
+        segments_up_right: List[List[int]] = [[c_r_index(x, y, self.width)
+                                               for x, y in zip(
+            range(last_move_col - self.win_length + i, last_move_col + i),
+            range(last_move_row + (self.win_length - i),
+                  last_move_row - self.win_length + (self.win_length - i), -1),
+        )]
+            for i in range(1, self.win_length + 1)
+            if 0 <= last_move_col - self.win_length + i and last_move_col + i <= self.width and
+            0 <= last_move_row - self.win_length + (self.win_length - i) + 1 and last_move_row + (self.win_length - i) < self.height]
+
+        return segments_horizontal, segments_vertical, segments_down_right, segments_up_right
+
+    def is_win_quick(self, last_move: Move):
+        last_move_col: int = last_move % self.width
+        last_move_row: int = last_move // self.width
+        # horizontal
+
+        horizontal_counter: int = 0
+        vertical_counter: int = 0
+        # top left to bottom right diagonal
+        diagonal_down_counter: int = 0
+        # bottom left to top right diagonal
+        diagonal_up_counter: int = 0
+
+        for x, y_top, y_bot in zip(
+            range(last_move_col - self.win_length +
+                  2, last_move_col + self.win_length),
+            range(last_move_row - self.win_length +
+                  2, last_move_row + self.win_length),
+            range(last_move_row + self.win_length - 2,
+                  last_move_row - self.win_length, -1)
+        ):
+            # 0 <<< because it has to be at least one for the comparison not to fail
+            # later down the line. (1 is substracted there)
+            x_in_bounds: bool = 0 < x < self.width
+            y_top_in_bounds: bool = 0 < y_top < self.height
+            # because it is only used in diagonal bottom left to top right, and it is handy to have it stop at height -1 for there, we let it limited to there
+            y_bot_in_bounds: bool = 0 < y_bot < self.height - 1
+
+            # horizontal
+            if x_in_bounds:
+                if self.position[c_r_index(x - 1, last_move_row, self.width)] == self.position[c_r_index(x, last_move_row, self.width)] != Connect4Piece.E:
+                    horizontal_counter += 1
+                    if horizontal_counter == self.win_length - 1:
+                        return True
+                else:
+                    horizontal_counter = 0
+
+            # vertical
+            if y_top_in_bounds:
+                if self.position[c_r_index(last_move_col, y_top - 1, self.width)] == self.position[c_r_index(last_move_col, y_top, self.width)] != Connect4Piece.E:
+                    vertical_counter += 1
+                    if vertical_counter == self.win_length - 1:
+                        return True
+                else:
+                    vertical_counter = 0
+
+            # diagonal top left to bottom right
+            if y_top_in_bounds and x_in_bounds:
+                if self.position[c_r_index(x - 1, y_top - 1, self.width)] == self.position[c_r_index(x, y_top, self.width)] != Connect4Piece.E:
+                    diagonal_down_counter += 1
+                    if diagonal_down_counter == self.win_length - 1:
+                        return True
+                else:
+                    diagonal_down_counter = 0
+
+            # diagonal top left to bottom right
+            if y_bot_in_bounds and x_in_bounds:
+                if self.position[c_r_index(x - 1, y_bot + 1, self.width)] == self.position[c_r_index(x, y_bot, self.width)] != Connect4Piece.E:
+                    diagonal_up_counter += 1
+                    if diagonal_up_counter == self.win_length - 1:
+                        return True
+                else:
+                    diagonal_up_counter = 0
+
+        # if no one wins because of this turn, return false
+        return False
+
+    def is_draw_quick(self, last_move: Move):
+        return (len(self.legal_moves) == 0) and (not self.is_win_quick(last_move))
+
+    def evaluate_quick(self, player: Connect4Piece, last_move: Move, last_eval: float) -> None:
+        # if self.is_win_quick(last_move):
+        #     return 1_000_000_000_000_000 * (int(player == Connect4Piece.R) * 2 - 1)
+
+        # elif self.is_draw_quick(last_move):
+        #     return 0
+
+        # # get_segments_containing_position(last_move), evaluate these segments and add it to last eval? <- still has problems
+        # for segment in self.segments:
+        #     pass
+
+        # player = the player for whom we evaluate
+        # last move, the last position, a chip was placed
+        # last eval, the eval before the move was played
+
+        def count_to_score(count):
+            if count <= 0:
+                return 0
+            if count == 1:
+                return 1
+            if count == 2:
+                return 100
+            if count == 3:
+                return 700
+            if count == self.win_length:
+                return 10e12
+
+            return 3 ** (count)
+
+        eval_diff: int = 0
+
+        segments: List[List[int]] = sum(
+            self.get_segments_for_move(last_move), start=[])
+
+        for segment in segments:
+            red_count, blue_count = self.count_segment(segment)
+
+            # assign the counts to the player thats turn it is and not.
+            moved_player: Connect4Piece = self.position[last_move]
+            if moved_player == Connect4Piece.B:
+                turn_count: int = blue_count
+                not_turn_count: int = red_count
+            else:
+                turn_count: int = red_count
+                not_turn_count: int = blue_count
+
+            # check if this segment was destroyed by this turn
+            if turn_count == 1 and not_turn_count > 0:
+                # If the moved player is player, he made +, so this is added
+                eval_diff += count_to_score(not_turn_count) * \
+                    ((moved_player == player) * 2 - 1)
+
+            # if this move made this segment larger
+            elif turn_count > 0 and not_turn_count == 0:
+                # Add the score to the player who made the move
+                eval_diff += count_to_score(turn_count) * \
+                    ((moved_player == player) * 2 - 1)
+
+            # If the Segment was destroyed earlier
+            # elif turn_count > 1 and not_turn_count > 1:
+            #     # do nothing
+            #     pass
+
+        return last_eval + eval_diff
+
+    """ This was part of the old evaluate_quick
+        for x, y_top, y_bot in zip(
+            range(last_move_col - self.win_length +
+                  2, last_move_col + self.win_length),
+            range(last_move_row - self.win_length +
+                  2, last_move_row + self.win_length),
+            range(last_move_row + self.win_length - 2,
+                  last_move_row - self.win_length, -1)
+        ):
+            # 0 <<< because it has to be at least one for the comparison not to fail
+            # later down the line. (1 is substracted there)
+            x_in_bounds: bool = 0 < x < self.width
+            y_top_in_bounds: bool = 0 < y_top < self.height
+            # because it is only used in diagonal bottom left to top right, and it is handy to have it stop at height -1 for there, we let it limited to there
+            y_bot_in_bounds: bool = 0 < y_bot < self.height - 1
+
+            # horizontal
+            if x_in_bounds:
+                if self.position[c_r_index(x - 1, last_move_row, self.width)] == self.position[c_r_index(x, last_move_row, self.width)]:
+                    evaluation_delta += 10 ** (2 * horizontal_counter)
+                    horizontal_counter += 1
+                    if horizontal_counter == self.win_length:
+                        return 1_000_000_000
+                else:
+                    # _, 2, 3, 4!
+                    for i in range(2, min(horizontal_counter, 4) + 1):
+                        evaluation_delta -= 10 ** (2 * (i - 1))
+
+                    horizontal_counter = 1
+
+            # vertical
+            if y_top_in_bounds:
+                if self.position[c_r_index(last_move_col, y_top - 1, self.width)] == self.position[c_r_index(last_move_col, y_top, self.width)] != Connect4Piece.E:
+                    vertical_counter += 1
+                    if vertical_counter == self.win_length - 1:
+                        return True
+                else:
+                    vertical_counter = 0
+
+            # diagonal top left to bottom right
+            if y_top_in_bounds and x_in_bounds:
+                if self.position[c_r_index(x - 1, y_top - 1, self.width)] == self.position[c_r_index(x, y_top, self.width)] != Connect4Piece.E:
+                    diagonal_down_counter += 1
+                    if diagonal_down_counter == self.win_length - 1:
+                        return True
+                else:
+                    diagonal_down_counter = 0
+
+            # diagonal top left to bottom right
+            if y_bot_in_bounds and x_in_bounds:
+                if self.position[c_r_index(x - 1, y_bot + 1, self.width)] == self.position[c_r_index(x, y_bot, self.width)] != Connect4Piece.E:
+                    diagonal_up_counter += 1
+                    if diagonal_up_counter == self.win_length - 1:
+                        return True
+                else:
+                    diagonal_up_counter = 0
+
+        # if no one wins because of this turn, return false
+
+        return evaluation_delta
+    """
 
     def __repr__(self):
         out: str = ""
