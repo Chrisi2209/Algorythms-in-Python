@@ -1,0 +1,1 @@
+Make it store the evaluation of a position to not always recalculate it!!!
