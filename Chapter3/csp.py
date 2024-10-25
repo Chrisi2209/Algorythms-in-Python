@@ -45,9 +45,9 @@ class CSP:
             else:
                 self.constraints[variable].append(constraint)
 
-    def check_satisfied(self, variable: V, assignment: Dict[V, Possibility]):
+    def check_satisfied(self, variable: V, assignment: Dict[V, Possibility], next_variable=-1):
         for constraint in self.constraints[variable]:
-            if not constraint.satisfied(assignment):
+            if not constraint.satisfied(assignment, next_variable):
                 return False
         return True
 
@@ -63,7 +63,7 @@ class CSP:
             local_assignment: Dict[V, Possibility] = assignment.copy()
             local_assignment[next_variable] = possibility
 
-            if not self.check_satisfied(next_variable, local_assignment):
+            if not self.check_satisfied(next_variable, local_assignment, next_variable):
                 continue
             
             result: Optional[Dict[V, Possibility]] = self.backtracking_search(local_assignment)
